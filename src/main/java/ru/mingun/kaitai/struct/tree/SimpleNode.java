@@ -46,7 +46,9 @@ public class SimpleNode extends BaseNode {
 
   //<editor-fold defaultstate="collapsed" desc="TreeNode">
   @Override
-  public BaseNode getChildAt(int childIndex) { throw new IndexOutOfBoundsException(childIndex); }
+  public BaseNode getChildAt(int childIndex) {
+    throw new IndexOutOfBoundsException("SimpleNode has no child nodes (childIndex = "+childIndex+")");
+  }
 
   @Override
   public int getChildCount() { return 0; }
