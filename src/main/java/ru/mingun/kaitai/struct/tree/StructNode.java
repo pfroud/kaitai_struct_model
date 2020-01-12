@@ -25,7 +25,9 @@ package ru.mingun.kaitai.struct.tree;
 
 import io.kaitai.struct.KaitaiStruct;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import static java.util.Collections.enumeration;
 import java.util.Enumeration;
 import java.util.List;
@@ -40,8 +42,8 @@ import javax.swing.tree.TreeNode;
  */
 public class StructNode extends BaseNode {
   private final KaitaiStruct value;
-  /** Array of getters of fields for storen struct. */
-  private final Method[] getters;
+  /** Array of getters of fields for stored struct. */
+  private final ArrayList<Method> getters = new ArrayList<>();
   /** Lazy populated list of child nodes. */
   private ArrayList<BaseNode> children;
 
@@ -53,14 +55,26 @@ public class StructNode extends BaseNode {
   StructNode(String name, KaitaiStruct value, BaseNode parent, int start, int end) throws ReflectiveOperationException {
     super(name, parent, start, end);
     final Class<?> clazz = value.getClass();
+    // getDeclaredMethods() doesn't guaranties any particular order, so sort fields
+    // according order in the type
     final String[] names = (String[])clazz.getField("_seqFields").get(null);
-
-    this.value = value;
-    this.getters = new Method[names.length];
-    for (int i = 0; i < names.length; ++i) {
-      this.getters[i] = clazz.getMethod(names[i]);
+    final List<String> order = Arrays.asList(names);
+    for (final Method m : clazz.getDeclaredMethods()) {
+      // Skip static methods, i.e. "fromFile"
+      // Skip all internal methods, i.e. "_io", "_parent", "_root"
+      if (Modifier.isStatic(m.getModifiers()) || m.getName().charAt(0) == '_') {
+        continue;
+      }
+      getters.add(m);
     }
 
+    getters.sort((Method m1, Method m2) -> {
+      final int pos1 = order.indexOf(m1.getName());
+      final int pos2 = order.indexOf(m2.getName());
+      return pos1 - pos2;
+    });
+
+    this.value     = value;
     this.attrStart = (Map<String, Integer>)clazz.getDeclaredField("_attrStart").get(value);
     this.attrEnd   = (Map<String, Integer>)clazz.getDeclaredField("_attrEnd").get(value);
     this.arrStart  = (Map<String, ? extends List<Integer>>)clazz.getDeclaredField("_arrStart").get(value);
@@ -75,7 +89,7 @@ public class StructNode extends BaseNode {
   public BaseNode getChildAt(int childIndex) { return init().get(childIndex); }
 
   @Override
-  public int getChildCount() { return getters.length; }
+  public int getChildCount() { return getters.size(); }
 
   @Override
   public int getIndex(TreeNode node) { return init().indexOf(node); }
@@ -93,14 +107,14 @@ public class StructNode extends BaseNode {
   @Override
   public String toString() {
     return name + " [" + value.getClass().getSimpleName()
-      + ", fields = " + getters.length
+      + ", fields = " + getters.size()
       + ", size = " + size()
       + "]";
   }
 
   private ArrayList<BaseNode> init() {
     if (children == null) {
-      children = new ArrayList<>(getters.length);
+      children = new ArrayList<>(getters.size());
       for (final Method getter : getters) {
         try {
           children.add(create(getter));
