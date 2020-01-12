@@ -74,6 +74,8 @@ public class SimpleNode extends BaseNode {
       for (final byte b : (byte[])value) {
         sb.append(String.format("%02x ", b));
       }
+    } else {
+      sb.append(value);
     }
     return sb.toString();
   }
