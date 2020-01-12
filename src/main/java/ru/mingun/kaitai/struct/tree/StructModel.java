@@ -58,9 +58,9 @@ public class StructModel implements TreeModel {
   public StructNode getRoot() { return root; }
 
   @Override
-  public BaseNode getChild(Object parent, int index) {
-    if (parent instanceof BaseNode) {
-      return ((BaseNode)parent).getChildAt(index);
+  public TreeNode getChild(Object parent, int index) {
+    if (parent instanceof TreeNode) {
+      return ((TreeNode)parent).getChildAt(index);
     }
     return null;
   }

@@ -33,12 +33,12 @@ import javax.swing.tree.TreeNode;
  *
  * @author Mingun
  */
-public class SimpleNode extends ChunkNode {
-  /** Parsed value of non-constructed type. */
+public class ParamNode extends ValueNode {
+  /** Value of parameter. */
   private final Object value;
 
-  SimpleNode(String name, Object value, ChunkNode parent, int start, int end) {
-    super(name, parent, start, end);
+  ParamNode(String name, Object value, ParamsNode parent) {
+    super(name, parent);
     this.value = value;
   }
 
@@ -47,8 +47,11 @@ public class SimpleNode extends ChunkNode {
 
   //<editor-fold defaultstate="collapsed" desc="TreeNode">
   @Override
-  public ChunkNode getChildAt(int childIndex) {
-    throw new IndexOutOfBoundsException("SimpleNode has no child nodes (childIndex = "+childIndex+")");
+  public ParamsNode getParent() { return (ParamsNode)parent; }
+
+  @Override
+  public TreeNode getChildAt(int childIndex) {
+    throw new IndexOutOfBoundsException("ParamNode has no child nodes (childIndex = "+childIndex+")");
   }
 
   @Override
@@ -64,13 +67,13 @@ public class SimpleNode extends ChunkNode {
   public boolean isLeaf() { return true; }
 
   @Override
-  public Enumeration<? extends ChunkNode> children() { return emptyEnumeration(); }
+  public Enumeration<? extends TreeNode> children() { return emptyEnumeration(); }
   //</editor-fold>
 
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(name);
-    toString(sb.append(" [size = ").append(size()).append("] = "), value);
+    toString(sb.append(" = "), value);
     return sb.toString();
   }
 }

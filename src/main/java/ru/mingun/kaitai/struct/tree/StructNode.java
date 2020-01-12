@@ -40,41 +40,54 @@ import javax.swing.tree.TreeNode;
  *
  * @author Mingun
  */
-public class StructNode extends BaseNode {
+public class StructNode extends ChunkNode {
   private final KaitaiStruct value;
-  /** Array of getters of fields for stored struct. */
-  private final ArrayList<Method> getters = new ArrayList<>();
-  /** Lazy populated list of child nodes. */
-  private ArrayList<BaseNode> children;
+  private final ChunksNode fields;
+  private final List<TreeNode> children;
 
   private final Map<String, Integer> attrStart;
   private final Map<String, Integer> attrEnd;
   private final Map<String, ? extends List<Integer>> arrStart;
   private final Map<String, ? extends List<Integer>> arrEnd;
 
-  StructNode(String name, KaitaiStruct value, BaseNode parent, int start, int end) throws ReflectiveOperationException {
+  StructNode(String name, KaitaiStruct value, ChunkNode parent, int start, int end) throws ReflectiveOperationException {
     super(name, parent, start, end);
     final Class<?> clazz = value.getClass();
     // getDeclaredMethods() doesn't guaranties any particular order, so sort fields
     // according order in the type
     final String[] names = (String[])clazz.getField("_seqFields").get(null);
     final List<String> order = Arrays.asList(names);
+
+    final ArrayList<Method> fields = new ArrayList<>();
+    final ArrayList<Method> params = new ArrayList<>();
+    final ArrayList<Method> instances = new ArrayList<>();
     for (final Method m : clazz.getDeclaredMethods()) {
       // Skip static methods, i.e. "fromFile"
       // Skip all internal methods, i.e. "_io", "_parent", "_root"
       if (Modifier.isStatic(m.getModifiers()) || m.getName().charAt(0) == '_') {
         continue;
       }
-      getters.add(m);
+      if (order.contains(m.getName())) {
+        fields.add(m);
+      } else {
+        // TODO: Distinguish between parameters and instances
+        params.add(m);
+      }
     }
 
-    getters.sort((Method m1, Method m2) -> {
+    fields.sort((Method m1, Method m2) -> {
       final int pos1 = order.indexOf(m1.getName());
       final int pos2 = order.indexOf(m2.getName());
       return pos1 - pos2;
     });
 
     this.value     = value;
+    this.fields    = new ChunksNode("Fields", fields, this);
+    this.children  = Arrays.asList(
+      new ParamsNode(params, this),
+      this.fields,
+      new ChunksNode("Instances", instances, this)
+    );
     this.attrStart = (Map<String, Integer>)clazz.getDeclaredField("_attrStart").get(value);
     this.attrEnd   = (Map<String, Integer>)clazz.getDeclaredField("_attrEnd").get(value);
     this.arrStart  = (Map<String, ? extends List<Integer>>)clazz.getDeclaredField("_arrStart").get(value);
@@ -86,13 +99,13 @@ public class StructNode extends BaseNode {
 
   //<editor-fold defaultstate="collapsed" desc="TreeNode">
   @Override
-  public BaseNode getChildAt(int childIndex) { return init().get(childIndex); }
+  public TreeNode getChildAt(int childIndex) { return children.get(childIndex); }
 
   @Override
-  public int getChildCount() { return getters.size(); }
+  public int getChildCount() { return children.size(); }
 
   @Override
-  public int getIndex(TreeNode node) { return init().indexOf(node); }
+  public int getIndex(TreeNode node) { return children.indexOf(node); }
 
   @Override
   public boolean getAllowsChildren() { return true; }
@@ -101,29 +114,15 @@ public class StructNode extends BaseNode {
   public boolean isLeaf() { return false; }
 
   @Override
-  public Enumeration<? extends BaseNode> children() { return enumeration(init()); }
+  public Enumeration<? extends TreeNode> children() { return enumeration(children); }
   //</editor-fold>
 
   @Override
   public String toString() {
     return name + " [" + value.getClass().getSimpleName()
-      + ", fields = " + getters.size()
+      + ", fields = " + fields.getChildCount()
       + ", size = " + size()
       + "]";
-  }
-
-  private ArrayList<BaseNode> init() {
-    if (children == null) {
-      children = new ArrayList<>(getters.size());
-      for (final Method getter : getters) {
-        try {
-          children.add(create(getter));
-        } catch (ReflectiveOperationException ex) {
-          throw new UnsupportedOperationException(ex);
-        }
-      }
-    }
-    return children;
   }
 
   /**
@@ -135,7 +134,7 @@ public class StructNode extends BaseNode {
    * @throws ReflectiveOperationException If kaitai class was genereted without
    *         debug info (which includes position information)
    */
-  private BaseNode create(Method getter) throws ReflectiveOperationException {
+  ChunkNode create(Method getter, ChunksNode parent) throws ReflectiveOperationException {
     final Object field = getter.invoke(value);
     final String name  = getter.getName();
     final int s = attrStart.get(name);

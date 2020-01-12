@@ -24,47 +24,26 @@
 package ru.mingun.kaitai.struct.tree;
 
 import io.kaitai.struct.KaitaiStruct;
-import java.util.Enumeration;
 import javax.swing.tree.TreeNode;
 
 /**
  * Base node for all nodes in the tree, that represents parts of message in
- * KaitaiStruct format.
+ * KaitaiStruct format, that occupied some region in the file.
  *
  * @author Mingun
  */
-public abstract class BaseNode implements TreeNode {
-  /** Field name or name of array element (index in brackets). */
-  protected final String name;
-  protected final BaseNode parent;
+public abstract class ChunkNode extends ValueNode {
   /** Position in parsed stream where this node begins. */
   private final int start;
   /** Position in parsed stream where this node ends (exclusive). */
   private final int end;
 
-  BaseNode(String name, BaseNode parent, int start, int end) {
-    this.name = name;
-    this.parent = parent;
+  ChunkNode(String name, TreeNode parent, int start, int end) {
+    super(name, parent);
     this.start = start;
     this.end = end;
   }
 
-  //<editor-fold defaultstate="collapsed" desc="TreeNode">
-  @Override
-  public BaseNode getParent() { return parent; }
-  @Override
-  public abstract BaseNode getChildAt(int childIndex);
-  @Override
-  public abstract Enumeration<? extends BaseNode> children();
-  //</editor-fold>
-
-  /**
-   * Returns value object, returned by KaitaiStruct parser. Subclasses returns more
-   * concrete classes
-   *
-   * @return Any object from underlaying Kaitai structure
-   */
-  public abstract Object getValue();
   /** Position in parsed stream where this node begins. */
   public int getStart() { return start; }
   /** Position in parsed stream where this node ends (exclusive). */
@@ -88,7 +67,7 @@ public abstract class BaseNode implements TreeNode {
    * @throws ReflectiveOperationException If {@code value} is {@link KaitaiStruct}
    *         and it was compiled without debug info (which includes position information)
    */
-  protected BaseNode create(String name, Object value, int start, int end) throws ReflectiveOperationException {
+  protected ChunkNode create(String name, Object value, int start, int end) throws ReflectiveOperationException {
     return value instanceof KaitaiStruct
       ? new StructNode(name, (KaitaiStruct)value, this, start, end)
       : new SimpleNode(name, value, this, start, end);

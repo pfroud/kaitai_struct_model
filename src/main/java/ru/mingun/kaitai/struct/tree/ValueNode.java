@@ -23,54 +23,44 @@
  */
 package ru.mingun.kaitai.struct.tree;
 
-import static java.util.Collections.emptyEnumeration;
-import java.util.Enumeration;
 import javax.swing.tree.TreeNode;
 
 /**
- * Node, that represents any simple object (such as {@code byte[]}, {@link Integer}
- * or {@link String}. Doesn't have child nodes.
+ * Base node for all nodes in the tree, that represents objects with name and
+ * value -- parameters, parsed field and instances.
  *
  * @author Mingun
  */
-public class SimpleNode extends ChunkNode {
-  /** Parsed value of non-constructed type. */
-  private final Object value;
+public abstract class ValueNode implements TreeNode {
+  /** Field name or name of array element (index in brackets). */
+  protected final String name;
+  protected final TreeNode parent;
 
-  SimpleNode(String name, Object value, ChunkNode parent, int start, int end) {
-    super(name, parent, start, end);
-    this.value = value;
+  ValueNode(String name, TreeNode parent) {
+    this.name = name;
+    this.parent = parent;
   }
 
-  @Override
-  public Object getValue() { return value; }
+  /**
+   * Returns value object, returned by KaitaiStruct parser. Subclasses returns more
+   * concrete classes
+   *
+   * @return Any object from underlaying Kaitai structure
+   */
+  public abstract Object getValue();
 
   //<editor-fold defaultstate="collapsed" desc="TreeNode">
   @Override
-  public ChunkNode getChildAt(int childIndex) {
-    throw new IndexOutOfBoundsException("SimpleNode has no child nodes (childIndex = "+childIndex+")");
-  }
-
-  @Override
-  public int getChildCount() { return 0; }
-
-  @Override
-  public int getIndex(TreeNode node) { return -1; }
-
-  @Override
-  public boolean getAllowsChildren() { return false; }
-
-  @Override
-  public boolean isLeaf() { return true; }
-
-  @Override
-  public Enumeration<? extends ChunkNode> children() { return emptyEnumeration(); }
+  public TreeNode getParent() { return parent; }
   //</editor-fold>
 
-  @Override
-  public String toString() {
-    final StringBuilder sb = new StringBuilder(name);
-    toString(sb.append(" [size = ").append(size()).append("] = "), value);
-    return sb.toString();
+  protected static void toString(StringBuilder sb, Object value) {
+    if (value instanceof byte[]) {
+      for (final byte b : (byte[])value) {
+        sb.append(String.format("%02x ", b));
+      }
+    } else {
+      sb.append(value);
+    }
   }
 }

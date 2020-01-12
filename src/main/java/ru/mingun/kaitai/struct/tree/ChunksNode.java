@@ -23,47 +23,42 @@
  */
 package ru.mingun.kaitai.struct.tree;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import static java.util.Collections.enumeration;
 import java.util.Enumeration;
-import java.util.List;
 import javax.swing.tree.TreeNode;
 
 /**
- * Node, that represents repeated data in struct definition. Each repeated value
- * represented as child node.
+ * Node-container for fields or instances. Each individualt field or instance value
+ * represented as child node. Child nodes a lazy populated when node is expended.
  *
  * @author Mingun
  */
-public class ListNode extends ChunkNode {
-  private final List<?> value;
+public class ChunksNode implements TreeNode {
+  /** Name of container. */
+  private final String name;
+  private final StructNode parent;
+  /** Array of getters of fields for stored struct. */
+  private final ArrayList<Method> getters;
   /** Lazy populated list of child nodes. */
-  private List<ChunkNode> children;
-  /** Start positions in root stream of each value object in {@link #value}. */
-  private final List<Integer> arrStart;
-  /** Endo positions in root stream of each value object in {@link #value} (exclusive). */
-  private final List<Integer> arrEnd;
+  private ArrayList<ChunkNode> children;
 
-  ListNode(String name, List<?> value, ChunksNode parent,
-    int start, int end,
-    List<Integer> arrStart,
-    List<Integer> arrEnd
-  ) {
-    super(name, parent, start, end);
-    this.value = value;
-    this.arrStart = arrStart;
-    this.arrEnd   = arrEnd;
+  ChunksNode(String name, ArrayList<Method> getters, StructNode parent) {
+    this.name    = name;
+    this.parent  = parent;
+    this.getters = getters;
   }
 
-  @Override
-  public List<?> getValue() { return value; }
-
   //<editor-fold defaultstate="collapsed" desc="TreeNode">
+  @Override
+  public StructNode getParent() { return parent; }
+
   @Override
   public ChunkNode getChildAt(int childIndex) { return init().get(childIndex); }
 
   @Override
-  public int getChildCount() { return value.size(); }
+  public int getChildCount() { return getters.size(); }
 
   @Override
   public int getIndex(TreeNode node) { return init().indexOf(node); }
@@ -72,29 +67,23 @@ public class ListNode extends ChunkNode {
   public boolean getAllowsChildren() { return true; }
 
   @Override
-  public boolean isLeaf() { return value.isEmpty(); }
+  public boolean isLeaf() { return getters.isEmpty(); }
 
   @Override
   public Enumeration<? extends ChunkNode> children() { return enumeration(init()); }
   //</editor-fold>
 
   @Override
-  public String toString() {
-    return name + " [count = " + value.size() + "; size = " + size() + "]";
-  }
+  public String toString() { return name + " (" + getters.size() + ")"; }
 
-  private List<ChunkNode> init() {
+  private ArrayList<ChunkNode> init() {
     if (children == null) {
-      children = new ArrayList<>(value.size());
-      int index = 0;
-      for (final Object obj : value) {
+      children = new ArrayList<>(getters.size());
+      for (final Method getter : getters) {
         try {
-          final int s = arrStart.get(index);
-          final int e = arrEnd.get(index);
-          children.add(create("[" + index + ']', obj, s, e));
-          ++index;
+          children.add(parent.create(getter, this));
         } catch (ReflectiveOperationException ex) {
-          throw new UnsupportedOperationException("Can't get list value at index " + index, ex);
+          throw new UnsupportedOperationException(ex);
         }
       }
     }
