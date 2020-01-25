@@ -37,8 +37,8 @@ public class SimpleNode extends ChunkNode {
   /** Parsed value of non-constructed type. */
   private final Object value;
 
-  SimpleNode(String name, Object value, ChunkNode parent, int start, int end) {
-    super(name, parent, start, end);
+  SimpleNode(String name, Object value, ChunkNode parent, int offset, int start, int end) {
+    super(name, parent, offset, start, end);
     this.value = value;
   }
 
@@ -70,7 +70,7 @@ public class SimpleNode extends ChunkNode {
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(name);
-    toString(sb.append(" [size = ").append(size()).append("] = "), value);
+    toString(sb.append(" [offset = ").append(getStart()).append("; size = ").append(size()).append("] = "), value);
     return sb.toString();
   }
 }

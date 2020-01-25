@@ -50,8 +50,8 @@ public class StructNode extends ChunkNode {
   private final Map<String, ? extends List<Integer>> arrStart;
   private final Map<String, ? extends List<Integer>> arrEnd;
 
-  StructNode(String name, KaitaiStruct value, ChunkNode parent, int start, int end) throws ReflectiveOperationException {
-    super(name, parent, start, end);
+  StructNode(String name, KaitaiStruct value, ChunkNode parent, int offset, int start, int end) throws ReflectiveOperationException {
+    super(name, parent, offset, start, end);
     final Class<?> clazz = value.getClass();
     // getDeclaredMethods() doesn't guaranties any particular order, so sort fields
     // according order in the type
@@ -120,8 +120,9 @@ public class StructNode extends ChunkNode {
   @Override
   public String toString() {
     return name + " [" + value.getClass().getSimpleName()
-      + ", fields = " + fields.getChildCount()
-      + ", size = " + size()
+      + "; fields = " + fields.getChildCount()
+      + "; offset = " + getStart()
+      + "; size = " + size()
       + "]";
   }
 
@@ -142,8 +143,8 @@ public class StructNode extends ChunkNode {
     if (List.class.isAssignableFrom(getter.getReturnType())) {
       final List<Integer> sa = arrStart.get(name);
       final List<Integer> se = arrEnd.get(name);
-      return new ListNode(name, (List<?>)field, parent, s, e, sa, se);
+      return new ListNode(name, (List<?>)field, parent, offset, s, e, sa, se);
     }
-    return create(name, field, s, e);
+    return create(name, field, start, s, e);
   }
 }

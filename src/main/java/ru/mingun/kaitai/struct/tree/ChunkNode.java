@@ -33,21 +33,30 @@ import javax.swing.tree.TreeNode;
  * @author Mingun
  */
 public abstract class ChunkNode extends ValueNode {
+  /** Start offset of parent node in root stream (i.e. global offset). */
+  protected final int offset;
   /** Position in parsed stream where this node begins. */
-  private final int start;
+  protected final int start;
   /** Position in parsed stream where this node ends (exclusive). */
-  private final int end;
+  protected final int end;
 
-  ChunkNode(String name, TreeNode parent, int start, int end) {
+  ChunkNode(String name, TreeNode parent, int offset, int start, int end) {
     super(name, parent);
+    this.offset = offset;
     this.start = start;
     this.end = end;
   }
 
-  /** Position in parsed stream where this node begins. */
-  public int getStart() { return start; }
-  /** Position in parsed stream where this node ends (exclusive). */
-  public int getEnd() { return end; }
+  /** Position in root stream where parent of this node begins. */
+  public int getParentStart() { return offset; }
+  /** Position in root stream where this node begins. */
+  public int getStart() { return offset + start; }
+  /** Position position in root stream where this node ends (exclusive). */
+  public int getEnd() { return offset + end; }
+  /** Local position in parsed stream where this node begins. */
+  public int getLocalStart() { return start; }
+  /** Local position in parsed stream where this node ends (exclusive). */
+  public int getLocalEnd() { return end; }
   /**
    * Returns occupied size in bytes in the stream.
    *
@@ -60,6 +69,7 @@ public abstract class ChunkNode extends ValueNode {
    *
    * @param name Name of field, under which this field arrives
    * @param value Value of object
+   * @param offset Byte offset from begin of root stream of parent node
    * @param start Byte offset from begin of stream, where that object starts
    * @param end Byte offset from begin of stream, where that object ends (exclusive)
    * @return
@@ -67,9 +77,9 @@ public abstract class ChunkNode extends ValueNode {
    * @throws ReflectiveOperationException If {@code value} is {@link KaitaiStruct}
    *         and it was compiled without debug info (which includes position information)
    */
-  protected ChunkNode create(String name, Object value, int start, int end) throws ReflectiveOperationException {
+  protected ChunkNode create(String name, Object value, int offset, int start, int end) throws ReflectiveOperationException {
     return value instanceof KaitaiStruct
-      ? new StructNode(name, (KaitaiStruct)value, this, start, end)
-      : new SimpleNode(name, value, this, start, end);
+      ? new StructNode(name, (KaitaiStruct)value, this, offset, start, end)
+      : new SimpleNode(name, value, this, offset, start, end);
   }
 }

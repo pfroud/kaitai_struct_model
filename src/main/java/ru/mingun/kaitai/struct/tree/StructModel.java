@@ -50,7 +50,7 @@ public class StructModel implements TreeModel {
    *         debug info (which includes position information)
    */
   public StructModel(KaitaiStruct value, int start, int end) throws ReflectiveOperationException {
-    this.root = new StructNode("<root>", value, null, start, end);
+    this.root = new StructNode("<root>", value, null, 0, start, end);
   }
 
   //<editor-fold defaultstate="collapsed" desc="TreeModel">

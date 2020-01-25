@@ -45,11 +45,11 @@ public class ListNode extends ChunkNode {
   private final List<Integer> arrEnd;
 
   ListNode(String name, List<?> value, ChunksNode parent,
-    int start, int end,
+    int offset, int start, int end,
     List<Integer> arrStart,
     List<Integer> arrEnd
   ) {
-    super(name, parent, start, end);
+    super(name, parent, offset, start, end);
     this.value = value;
     this.arrStart = arrStart;
     this.arrEnd   = arrEnd;
@@ -80,7 +80,7 @@ public class ListNode extends ChunkNode {
 
   @Override
   public String toString() {
-    return name + " [count = " + value.size() + "; size = " + size() + "]";
+    return name + " [count = " + value.size() + "; offset = " + getStart() + "; size = " + size() + "]";
   }
 
   private List<ChunkNode> init() {
@@ -91,7 +91,7 @@ public class ListNode extends ChunkNode {
         try {
           final int s = arrStart.get(index);
           final int e = arrEnd.get(index);
-          children.add(create("[" + index + ']', obj, s, e));
+          children.add(create("[" + index + ']', obj, 0, s, e));
           ++index;
         } catch (ReflectiveOperationException ex) {
           throw new UnsupportedOperationException("Can't get list value at index " + index, ex);
