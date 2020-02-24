@@ -40,17 +40,28 @@ public class StructModel implements TreeModel {
   private final EventListenerList listeners = new EventListenerList();
 
   /**
-   * Creates read-only model for specified structure.
+   * Creates read-only model for specified structure with name {@code "<root>"}.
    *
-   * @param value
-   * @param start Byte offset from begin of stream, where that object starts
-   * @param end Byte offset from begin of stream, where that object ends (exclusive)
+   * @param value the root structure, represented by this node
    *
    * @throws ReflectiveOperationException If kaitai class was genereted without
    *         debug info (which includes position information)
    */
-  public StructModel(KaitaiStruct value, int start, int end) throws ReflectiveOperationException {
-    this.root = new StructNode("<root>", value, null, 0, start, end);
+  public StructModel(KaitaiStruct value) throws ReflectiveOperationException {
+    this("<root>", value);
+  }
+
+  /**
+   * Creates read-only model for specified structure with specified name.
+   *
+   * @param name displayed name of the structure
+   * @param value the root structure, represented by this node
+   *
+   * @throws ReflectiveOperationException If kaitai class was genereted without
+   *         debug info (which includes position information)
+   */
+  public StructModel(String name, KaitaiStruct value) throws ReflectiveOperationException {
+    this.root = new StructNode(name, value, null);
   }
 
   //<editor-fold defaultstate="collapsed" desc="TreeModel">

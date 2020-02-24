@@ -50,7 +50,20 @@ public class StructNode extends ChunkNode {
   private final Map<String, ? extends List<Integer>> arrStart;
   private final Map<String, ? extends List<Integer>> arrEnd;
 
-  StructNode(String name, KaitaiStruct value, ChunkNode parent, int offset, int start, int end) throws ReflectiveOperationException {
+  /**
+   * Constructor used to create node for representing root structure.
+   *
+   * @param name displayed name of the structure
+   * @param value the root structure, represented by this node
+   * @param parent parent node, for including node in hierarchy
+   *
+   * @throws ReflectiveOperationException If kaitai class was genereted without
+   *         debug info (which includes position information)
+   */
+  public StructNode(String name, KaitaiStruct value, TreeNode parent) throws ReflectiveOperationException {
+    this(name, value, parent, 0, 0, value._io().pos());
+  }
+  StructNode(String name, KaitaiStruct value, TreeNode parent, int offset, int start, int end) throws ReflectiveOperationException {
     super(name, parent, offset, start, end);
     final Class<?> clazz = value.getClass();
     // getDeclaredMethods() doesn't guaranties any particular order, so sort fields
