@@ -45,7 +45,7 @@ public class ListNode extends ChunkNode {
   private final List<Integer> arrEnd;
 
   ListNode(String name, List<?> value, StructNode parent,
-    int offset, int start, int end,
+    long offset, long start, long end,
     List<Integer> arrStart,
     List<Integer> arrEnd
   ) {

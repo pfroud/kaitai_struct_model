@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2020 Mingun.
+ * Copyright 2020-2021 Mingun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ public class SimpleNode extends ChunkNode {
   /** Parsed value of non-constructed type. */
   private final Object value;
 
-  SimpleNode(String name, Object value, ChunkNode parent, int offset, int start, int end) {
+  SimpleNode(String name, Object value, ChunkNode parent, long offset, long start, long end) {
     super(name, parent, offset, start, end);
     this.value = value;
   }

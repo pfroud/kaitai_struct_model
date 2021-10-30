@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2020 Mingun.
+ * Copyright 2020-2021 Mingun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,13 +34,13 @@ import javax.swing.tree.TreeNode;
  */
 public abstract class ChunkNode extends ValueNode {
   /** Start offset of parent node in root stream (i.e. global offset). */
-  protected final int offset;
+  protected final long offset;
   /** Position in parsed stream where this node begins. */
-  protected final int start;
+  protected final long start;
   /** Position in parsed stream where this node ends (exclusive). */
-  protected final int end;
+  protected final long end;
 
-  ChunkNode(String name, TreeNode parent, int offset, int start, int end) {
+  ChunkNode(String name, TreeNode parent, long offset, long start, long end) {
     super(name, parent);
     this.offset = offset;
     this.start = start;
@@ -48,21 +48,21 @@ public abstract class ChunkNode extends ValueNode {
   }
 
   /** Position in root stream where parent of this node begins. */
-  public int getParentStart() { return offset; }
+  public long getParentStart() { return offset; }
   /** Position in root stream where this node begins. */
-  public int getStart() { return offset + start; }
+  public long getStart() { return offset + start; }
   /** Position position in root stream where this node ends (exclusive). */
-  public int getEnd() { return offset + end; }
+  public long getEnd() { return offset + end; }
   /** Local position in parsed stream where this node begins. */
-  public int getLocalStart() { return start; }
+  public long getLocalStart() { return start; }
   /** Local position in parsed stream where this node ends (exclusive). */
-  public int getLocalEnd() { return end; }
+  public long getLocalEnd() { return end; }
   /**
    * Returns occupied size in bytes in the stream.
    *
    * @return Size of this node in bytes
    */
-  public int size() { return end - start; }
+  public long size() { return end - start; }
 
   /**
    * Creates tree node for object.
@@ -77,7 +77,7 @@ public abstract class ChunkNode extends ValueNode {
    * @throws ReflectiveOperationException If {@code value} is {@link KaitaiStruct}
    *         and it was compiled without debug info (which includes position information)
    */
-  protected ChunkNode create(String name, Object value, int offset, int start, int end) throws ReflectiveOperationException {
+  protected ChunkNode create(String name, Object value, long offset, long start, long end) throws ReflectiveOperationException {
     return value instanceof KaitaiStruct
       ? new StructNode(name, (KaitaiStruct)value, this, offset, start, end)
       : new SimpleNode(name, value, this, offset, start, end);

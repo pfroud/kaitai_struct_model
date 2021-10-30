@@ -67,7 +67,7 @@ public class StructNode extends ChunkNode {
   public StructNode(String name, KaitaiStruct value, TreeNode parent) throws ReflectiveOperationException {
     this(name, value, parent, 0, 0, value._io().pos());
   }
-  StructNode(String name, KaitaiStruct value, TreeNode parent, int offset, int start, int end) throws ReflectiveOperationException {
+  StructNode(String name, KaitaiStruct value, TreeNode parent, long offset, long start, long end) throws ReflectiveOperationException {
     super(name, parent, offset, start, end);
     final Class<?> clazz = value.getClass();
     // getDeclaredMethods() doesn't guaranties any particular order, so sort fields
