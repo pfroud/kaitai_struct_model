@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2020 Mingun.
+ * Copyright 2020-2021 Mingun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,8 +42,12 @@ import javax.swing.tree.TreeNode;
  */
 public class StructNode extends ChunkNode {
   private final KaitaiStruct value;
-  private final ChunksNode fields;
-  private final List<TreeNode> children;
+  /** Array of getters of fields for stored fields. */
+  private final ArrayList<Method> fields;
+  /** Array of getters of fields for parameters and instances. */
+  private final ArrayList<Method> instances;
+  /** Lazy populated list of child nodes. */
+  private ArrayList<ChunkNode> children;
 
   private final Map<String, Integer> attrStart;
   private final Map<String, Integer> attrEnd;
@@ -71,9 +75,8 @@ public class StructNode extends ChunkNode {
     final String[] names = (String[])clazz.getField("_seqFields").get(null);
     final List<String> order = Arrays.asList(names);
 
-    final ArrayList<Method> fields = new ArrayList<>();
-    final ArrayList<Method> params = new ArrayList<>();
-    final ArrayList<Method> instances = new ArrayList<>();
+    this.instances = new ArrayList<>();
+    this.fields = new ArrayList<>();
     for (final Method m : clazz.getDeclaredMethods()) {
       // Skip static methods, i.e. "fromFile"
       // Skip all internal methods, i.e. "_io", "_parent", "_root"
@@ -84,7 +87,7 @@ public class StructNode extends ChunkNode {
         fields.add(m);
       } else {
         // TODO: Distinguish between parameters and instances
-        params.add(m);
+        instances.add(m);
       }
     }
 
@@ -95,12 +98,7 @@ public class StructNode extends ChunkNode {
     });
 
     this.value     = value;
-    this.fields    = new ChunksNode("Fields", fields, this);
-    this.children  = Arrays.asList(
-      new ParamsNode(params, this),
-      this.fields,
-      new ChunksNode("Instances", instances, this)
-    );
+    this.children  = null;
     this.attrStart = (Map<String, Integer>)clazz.getDeclaredField("_attrStart").get(value);
     this.attrEnd   = (Map<String, Integer>)clazz.getDeclaredField("_attrEnd").get(value);
     this.arrStart  = (Map<String, ? extends List<Integer>>)clazz.getDeclaredField("_arrStart").get(value);
@@ -112,13 +110,19 @@ public class StructNode extends ChunkNode {
 
   //<editor-fold defaultstate="collapsed" desc="TreeNode">
   @Override
-  public TreeNode getChildAt(int childIndex) { return children.get(childIndex); }
+  public TreeNode getChildAt(int childIndex) { return init().get(childIndex); }
 
   @Override
-  public int getChildCount() { return children.size(); }
+  public int getChildCount() { return fields.size() + instances.size(); }
 
   @Override
-  public int getIndex(TreeNode node) { return children.indexOf(node); }
+  public int getIndex(TreeNode node) {
+    // If node is not initialized then node is not our child
+    if (node == null || children == null) {
+      return -1;
+    }
+    return init().indexOf(node);
+  }
 
   @Override
   public boolean getAllowsChildren() { return true; }
@@ -127,13 +131,13 @@ public class StructNode extends ChunkNode {
   public boolean isLeaf() { return false; }
 
   @Override
-  public Enumeration<? extends TreeNode> children() { return enumeration(children); }
+  public Enumeration<? extends TreeNode> children() { return enumeration(init()); }
   //</editor-fold>
 
   @Override
   public String toString() {
     return name + " [" + value.getClass().getSimpleName()
-      + "; fields = " + fields.getChildCount()
+      + "; fields = " + fields.size()
       + "; offset = " + getStart()
       + "; size = " + size()
       + "]";
@@ -148,7 +152,7 @@ public class StructNode extends ChunkNode {
    * @throws ReflectiveOperationException If kaitai class was genereted without
    *         debug info (which includes position information)
    */
-  ChunkNode create(Method getter, ChunksNode parent) throws ReflectiveOperationException {
+  private ChunkNode create(Method getter) throws ReflectiveOperationException {
     final Object field = getter.invoke(value);
     final String name  = getter.getName();
     final int s = attrStart.get(name);
@@ -156,8 +160,25 @@ public class StructNode extends ChunkNode {
     if (List.class.isAssignableFrom(getter.getReturnType())) {
       final List<Integer> sa = arrStart.get(name);
       final List<Integer> se = arrEnd.get(name);
-      return new ListNode(name, (List<?>)field, parent, offset, s, e, sa, se);
+      return new ListNode(name, (List<?>)field, this, offset, s, e, sa, se);
     }
     return create(name, field, start, s, e);
+  }
+
+  private ArrayList<ChunkNode> init() {
+    if (children == null) {
+      children = new ArrayList<>();
+      try {
+        for (final Method getter : fields) {
+          children.add(create(getter));
+        }
+        for (final Method getter : instances) {
+          children.add(create(getter));
+        }
+      } catch (ReflectiveOperationException ex) {
+        throw new UnsupportedOperationException(ex);
+      }
+    }
+    return children;
   }
 }

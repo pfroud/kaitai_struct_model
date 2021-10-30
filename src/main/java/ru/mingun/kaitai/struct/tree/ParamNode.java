@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2020 Mingun.
+ * Copyright 2020-2021 Mingun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,10 +34,10 @@ import javax.swing.tree.TreeNode;
  * @author Mingun
  */
 public class ParamNode extends ValueNode {
-  /** Value of parameter. */
+  /** Value of the parameter. */
   private final Object value;
 
-  ParamNode(String name, Object value, ParamsNode parent) {
+  ParamNode(String name, Object value, StructNode parent) {
     super(name, parent);
     this.value = value;
   }
@@ -47,7 +47,7 @@ public class ParamNode extends ValueNode {
 
   //<editor-fold defaultstate="collapsed" desc="TreeNode">
   @Override
-  public ParamsNode getParent() { return (ParamsNode)parent; }
+  public StructNode getParent() { return (StructNode)parent; }
 
   @Override
   public TreeNode getChildAt(int childIndex) {

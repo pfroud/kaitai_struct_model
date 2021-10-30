@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2020 Mingun.
+ * Copyright 2020-2021 Mingun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,8 @@ import java.util.List;
 import javax.swing.tree.TreeNode;
 
 /**
- * Node, that represents repeated data in struct definition. Each repeated value
- * represented as child node.
+ * Node, that represents a repeated data in struct definition. An each repeated value
+ * represented as a child node.
  *
  * @author Mingun
  */
@@ -44,7 +44,7 @@ public class ListNode extends ChunkNode {
   /** Endo positions in root stream of each value object in {@link #value} (exclusive). */
   private final List<Integer> arrEnd;
 
-  ListNode(String name, List<?> value, ChunksNode parent,
+  ListNode(String name, List<?> value, StructNode parent,
     int offset, int start, int end,
     List<Integer> arrStart,
     List<Integer> arrEnd
