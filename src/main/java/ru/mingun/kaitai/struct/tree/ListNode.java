@@ -28,6 +28,7 @@ import static java.util.Collections.enumeration;
 import java.util.Enumeration;
 import java.util.List;
 import javax.swing.tree.TreeNode;
+import ru.mingun.kaitai.struct.Span;
 
 /**
  * Node, that represents a repeated data in struct definition. An each repeated value
@@ -45,11 +46,11 @@ public class ListNode extends ChunkNode {
   private final List<Integer> arrEnd;
 
   ListNode(String name, List<?> value, StructNode parent,
-    long offset, long start, long end,
+    Span span,
     List<Integer> arrStart,
     List<Integer> arrEnd
   ) {
-    super(name, parent, offset, start, end);
+    super(name, parent, span);
     this.value = value;
     this.arrStart = arrStart;
     this.arrEnd   = arrEnd;
@@ -80,7 +81,7 @@ public class ListNode extends ChunkNode {
 
   @Override
   public String toString() {
-    return name + " [count = " + value.size() + "; offset = " + getStart() + "; size = " + size() + "]";
+    return name + " [count = " + value.size() + "; offset = " + span.getStart() + "; size = " + span.size() + "]";
   }
 
   private List<ChunkNode> init() {
@@ -91,7 +92,8 @@ public class ListNode extends ChunkNode {
         try {
           final int s = arrStart.get(index);
           final int e = arrEnd.get(index);
-          children.add(create("[" + index + ']', obj, 0, s, e));
+          final Span span = new Span(s, e);
+          children.add(create("[" + index + ']', obj, span));
           ++index;
         } catch (ReflectiveOperationException ex) {
           throw new UnsupportedOperationException("Can't get list value at index " + index, ex);

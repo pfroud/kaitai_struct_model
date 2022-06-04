@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2020-2021 Mingun.
+ * Copyright 2020-2022 Mingun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import javax.swing.tree.TreeNode;
+import ru.mingun.kaitai.struct.Span;
 
 /**
  * Node, that represents single {@link KaitaiStruct} object. Each struct field
@@ -65,10 +66,10 @@ public class StructNode extends ChunkNode {
    *         debug info (which includes position information)
    */
   public StructNode(String name, KaitaiStruct value, TreeNode parent) throws ReflectiveOperationException {
-    this(name, value, parent, 0, 0, value._io().pos());
+    this(name, value, parent, new Span(0, value._io().pos()));
   }
-  StructNode(String name, KaitaiStruct value, TreeNode parent, long offset, long start, long end) throws ReflectiveOperationException {
-    super(name, parent, offset, start, end);
+  StructNode(String name, KaitaiStruct value, TreeNode parent, Span span) throws ReflectiveOperationException {
+    super(name, parent, span);
     final Class<?> clazz = value.getClass();
     // getDeclaredMethods() doesn't guaranties any particular order, so sort fields
     // according order in the type
@@ -138,8 +139,8 @@ public class StructNode extends ChunkNode {
   public String toString() {
     return name + " [" + value.getClass().getSimpleName()
       + "; fields = " + fields.size()
-      + "; offset = " + getStart()
-      + "; size = " + size()
+      + "; offset = " + span.getStart()
+      + "; size = " + span.size()
       + "]";
   }
 
@@ -157,12 +158,13 @@ public class StructNode extends ChunkNode {
     final String name  = getter.getName();
     final int s = attrStart.get(name);
     final int e = attrEnd.get(name);
+    final Span span = new Span(s, e);
     if (List.class.isAssignableFrom(getter.getReturnType())) {
       final List<Integer> sa = arrStart.get(name);
       final List<Integer> se = arrEnd.get(name);
-      return new ListNode(name, (List<?>)field, this, offset, s, e, sa, se);
+      return new ListNode(name, (List<?>)field, this, span, sa, se);
     }
-    return create(name, field, start, s, e);
+    return create(name, field, span);
   }
 
   private ArrayList<ChunkNode> init() {
