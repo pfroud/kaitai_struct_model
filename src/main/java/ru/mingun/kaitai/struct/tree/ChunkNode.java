@@ -42,7 +42,10 @@ public abstract class ChunkNode extends ValueNode {
     this.span = span;
   }
 
-  /** Space that this node occupies in a stream. */
+  /**
+   * Space that this node occupies in a stream or {@code null} for missing
+   * optional fields and calculated values ("value" instances).
+   */
   public Span getSpan() { return span; }
 
   /**

@@ -137,11 +137,14 @@ public class StructNode extends ChunkNode {
 
   @Override
   public String toString() {
-    return name + " [" + value.getClass().getSimpleName()
-      + "; fields = " + fields.size()
-      + "; offset = " + span.getStart()
-      + "; size = " + span.size()
-      + "]";
+    final StringBuilder sb = new StringBuilder(name);
+    sb.append(" [").append(value.getClass().getSimpleName())
+      .append("; fields = ").append(fields.size());
+    if (span != null) {
+      sb.append("; offset = ").append(span.getStart())
+        .append("; size = ").append(span.size());
+    }
+    return sb.append(']').toString();
   }
 
   /**
@@ -156,13 +159,18 @@ public class StructNode extends ChunkNode {
   private ChunkNode create(Method getter) throws ReflectiveOperationException {
     final Object field = getter.invoke(value);
     final String name  = getter.getName();
-    final int s = attrStart.get(name);
-    final int e = attrEnd.get(name);
-    final Span span = new Span(s, e);
-    if (List.class.isAssignableFrom(getter.getReturnType())) {
+    // Optional field could be not presented in the maps if it missing in input
+    // "value" instances doesn't present in the maps
+    final Integer s = attrStart.get(name);
+    final Integer e = attrEnd.get(name);
+    final boolean isPresent = s != null && e != null;
+
+    final Span span = isPresent ? new Span(s, e) : null;
+    // isPresent filters out "value" instances with List content
+    if (isPresent && List.class.isAssignableFrom(getter.getReturnType())) {
       final List<Integer> sa = arrStart.get(name);
-      final List<Integer> se = arrEnd.get(name);
-      return new ListNode(name, (List<?>)field, this, span, sa, se);
+      final List<Integer> ea = arrEnd.get(name);
+      return new ListNode(name, (List<?>)field, this, span, sa, ea);
     }
     return create(name, field, span);
   }

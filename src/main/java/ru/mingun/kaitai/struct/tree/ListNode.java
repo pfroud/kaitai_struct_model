@@ -81,7 +81,13 @@ public class ListNode extends ChunkNode {
 
   @Override
   public String toString() {
-    return name + " [count = " + value.size() + "; offset = " + span.getStart() + "; size = " + span.size() + "]";
+    final StringBuilder sb = new StringBuilder(name);
+    sb.append(" [count = ").append(value.size());
+    if (span != null) {
+      sb.append("; offset = ").append(span.getStart())
+        .append("; size = ").append(span.size());
+    }
+    return sb.append(']').toString();
   }
 
   private List<ChunkNode> init() {

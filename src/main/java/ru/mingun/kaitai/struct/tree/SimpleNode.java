@@ -71,9 +71,12 @@ public class SimpleNode extends ChunkNode {
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(name);
-    toString(sb.append(" [offset = ").append(span.getStart())
-               .append("; size = ").append(span.size())
-               .append("] = "), value);
+    if (span != null) {
+      sb.append(" [offset = ").append(span.getStart())
+        .append("; size = ").append(span.size())
+        .append(']');
+    }
+    toString(sb.append(" = "), value);
     return sb.toString();
   }
 }
