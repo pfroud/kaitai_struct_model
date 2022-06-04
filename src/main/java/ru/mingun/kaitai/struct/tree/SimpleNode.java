@@ -37,13 +37,19 @@ public class SimpleNode extends ChunkNode {
   /** Parsed value of non-constructed type. */
   private final Object value;
 
-  SimpleNode(String name, Object value, ChunkNode parent, long offset, long start, long end) {
+  /** Replace value.getClass() when value==null. */
+  private final Class<?> classOfValue;
+
+  SimpleNode(String name, Object value, Class<?> valueClass, ChunkNode parent, long offset, long start, long end) {
     super(name, parent, offset, start, end);
     this.value = value;
+    this.classOfValue = valueClass;
   }
 
   @Override
   public Object getValue() { return value; }
+
+  public Class<?> getClassOfValue() { return classOfValue; }
 
   //<editor-fold defaultstate="collapsed" desc="TreeNode">
   @Override

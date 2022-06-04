@@ -23,11 +23,14 @@
  */
 package ru.mingun.kaitai.struct.tree;
 
+import javax.swing.tree.TreeNode;
 import java.util.ArrayList;
-import static java.util.Collections.enumeration;
 import java.util.Enumeration;
 import java.util.List;
-import javax.swing.tree.TreeNode;
+import java.util.Objects;
+import java.util.Optional;
+
+import static java.util.Collections.enumeration;
 
 /**
  * Node, that represents a repeated data in struct definition. An each repeated value
@@ -91,7 +94,21 @@ public class ListNode extends ChunkNode {
         try {
           final int s = arrStart.get(index);
           final int e = arrEnd.get(index);
-          children.add(create("[" + index + ']', obj, 0, s, e));
+
+          /*
+           We cannot access the generic type of the List at runtime due to
+           type erasure. Instead, look for a non-null element in the List,
+           which will tell us the type of the whole list.
+           */
+          final Class<?> valueClass;
+          final Optional<?> nonNullElement = value.stream().filter(Objects::nonNull).findAny();
+          if (nonNullElement.isPresent()) {
+            valueClass = nonNullElement.get().getClass();
+          } else {
+            valueClass = null;
+          }
+
+          children.add(create("[" + index + ']', obj, valueClass, 0, s, e));
           ++index;
         } catch (ReflectiveOperationException ex) {
           throw new UnsupportedOperationException("Can't get list value at index " + index, ex);

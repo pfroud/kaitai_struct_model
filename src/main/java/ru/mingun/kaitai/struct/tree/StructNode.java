@@ -162,7 +162,7 @@ public class StructNode extends ChunkNode {
       final List<Integer> se = arrEnd.get(name);
       return new ListNode(name, (List<?>)field, this, offset, s, e, sa, se);
     }
-    return create(name, field, start, s, e);
+    return create(name, field, getter.getReturnType(), start, s, e);
   }
 
   private ArrayList<ChunkNode> init() {
