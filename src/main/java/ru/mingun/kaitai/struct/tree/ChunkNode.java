@@ -37,9 +37,13 @@ public abstract class ChunkNode extends ValueNode {
   /** Space that this node occupies in a stream. */
   protected final Span span;
 
-  ChunkNode(String name, TreeNode parent, Span span) {
+  /** {@code true} if this node came from {@code seq}, {@code false} if it came from {@code instances}. */
+  protected final boolean isSequential;
+
+  ChunkNode(String name, TreeNode parent, Span span, boolean isSequential) {
     super(name, parent);
     this.span = span;
+    this.isSequential = isSequential;
   }
 
   /**
@@ -47,6 +51,13 @@ public abstract class ChunkNode extends ValueNode {
    * optional fields and calculated values ("value" instances).
    */
   public Span getSpan() { return span; }
+  /**
+   * {@code true} if this node came from {@code seq}, {@code false} if it came from {@code instances}.
+   *
+   * Note: because of technical limitations, parameters not distinguishable from instances, so
+   * parameters represented as instances and this method will return {@code true} for parameter nodes.
+   */
+  public boolean isSequential() { return isSequential; }
 
   /**
    * Creates tree node for object.
@@ -54,15 +65,17 @@ public abstract class ChunkNode extends ValueNode {
    * @param name Name of field, under which this field arrives
    * @param value Value of object
    * @param span Space that node is occupied in a stream
+   * @param isSequential If {@code true}, field declared in the {@code seq} section of the type,
+   *        otherwise it is declared in the {@code instances} section
    *
    * @return
    *
    * @throws ReflectiveOperationException If {@code value} is {@link KaitaiStruct}
    *         and it was compiled without debug info (which includes position information)
    */
-  protected ChunkNode create(String name, Object value, Span span) throws ReflectiveOperationException {
+  protected ChunkNode create(String name, Object value, Span span, boolean isSequential) throws ReflectiveOperationException {
     return value instanceof KaitaiStruct
-      ? new StructNode(name, (KaitaiStruct)value, this, span)
-      : new SimpleNode(name, value, this, span);
+      ? new StructNode(name, (KaitaiStruct)value, this, span, isSequential)
+      : new SimpleNode(name, value, this, span, isSequential);
   }
 }

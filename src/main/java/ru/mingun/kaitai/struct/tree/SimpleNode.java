@@ -38,8 +38,8 @@ public class SimpleNode extends ChunkNode {
   /** Parsed value of non-constructed type. */
   private final Object value;
 
-  SimpleNode(String name, Object value, ChunkNode parent, Span span) {
-    super(name, parent, span);
+  SimpleNode(String name, Object value, ChunkNode parent, Span span, boolean isSequential) {
+    super(name, parent, span, isSequential);
     this.value = value;
   }
 

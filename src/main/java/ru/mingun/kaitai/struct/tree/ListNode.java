@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2020-2021 Mingun.
+ * Copyright 2020-2022 Mingun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,10 +47,11 @@ public class ListNode extends ChunkNode {
 
   ListNode(String name, List<?> value, StructNode parent,
     Span span,
+    boolean isSequential,
     List<Integer> arrStart,
     List<Integer> arrEnd
   ) {
-    super(name, parent, span);
+    super(name, parent, span, isSequential);
     this.value = value;
     this.arrStart = arrStart;
     this.arrEnd   = arrEnd;
@@ -99,7 +100,7 @@ public class ListNode extends ChunkNode {
           final int s = arrStart.get(index);
           final int e = arrEnd.get(index);
           final Span span = new Span(s, e);
-          children.add(create("[" + index + ']', obj, span));
+          children.add(create("[" + index + ']', obj, span, isSequential));
           ++index;
         } catch (ReflectiveOperationException ex) {
           throw new UnsupportedOperationException("Can't get list value at index " + index, ex);

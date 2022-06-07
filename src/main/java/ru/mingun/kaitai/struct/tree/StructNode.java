@@ -66,10 +66,10 @@ public class StructNode extends ChunkNode {
    *         debug info (which includes position information)
    */
   public StructNode(String name, KaitaiStruct value, TreeNode parent) throws ReflectiveOperationException {
-    this(name, value, parent, new Span(0, value._io().pos()));
+    this(name, value, parent, new Span(0, value._io().pos()), true);
   }
-  StructNode(String name, KaitaiStruct value, TreeNode parent, Span span) throws ReflectiveOperationException {
-    super(name, parent, span);
+  StructNode(String name, KaitaiStruct value, TreeNode parent, Span span, boolean isSequential) throws ReflectiveOperationException {
+    super(name, parent, span, isSequential);
     final Class<?> clazz = value.getClass();
     // getDeclaredMethods() doesn't guaranties any particular order, so sort fields
     // according order in the type
@@ -156,7 +156,7 @@ public class StructNode extends ChunkNode {
    * @throws ReflectiveOperationException If kaitai class was genereted without
    *         debug info (which includes position information)
    */
-  private ChunkNode create(Method getter) throws ReflectiveOperationException {
+  private ChunkNode create(Method getter, boolean isSequential) throws ReflectiveOperationException {
     final Object field = getter.invoke(value);
     final String name  = getter.getName();
     // Optional field could be not presented in the maps if it missing in input
@@ -170,9 +170,9 @@ public class StructNode extends ChunkNode {
     if (isPresent && List.class.isAssignableFrom(getter.getReturnType())) {
       final List<Integer> sa = arrStart.get(name);
       final List<Integer> ea = arrEnd.get(name);
-      return new ListNode(name, (List<?>)field, this, span, sa, ea);
+      return new ListNode(name, (List<?>)field, this, span, isSequential, sa, ea);
     }
-    return create(name, field, span);
+    return create(name, field, span, isSequential);
   }
 
   private ArrayList<ChunkNode> init() {
@@ -180,10 +180,10 @@ public class StructNode extends ChunkNode {
       children = new ArrayList<>();
       try {
         for (final Method getter : fields) {
-          children.add(create(getter));
+          children.add(create(getter, true));
         }
         for (final Method getter : instances) {
-          children.add(create(getter));
+          children.add(create(getter, false));
         }
       } catch (ReflectiveOperationException ex) {
         throw new UnsupportedOperationException(ex);
