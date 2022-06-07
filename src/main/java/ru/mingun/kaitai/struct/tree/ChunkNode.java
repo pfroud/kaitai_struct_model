@@ -64,6 +64,8 @@ public abstract class ChunkNode extends ValueNode {
    *
    * @param name Name of field, under which this field arrives
    * @param value Value of object
+   * @param valueClass Static class of the {@code value}. This is not necessary a runtime class of a
+   *        value, but {@code value} is an instance of this class
    * @param span Space that node is occupied in a stream
    * @param isSequential If {@code true}, field declared in the {@code seq} section of the type,
    *        otherwise it is declared in the {@code instances} section
@@ -73,9 +75,9 @@ public abstract class ChunkNode extends ValueNode {
    * @throws ReflectiveOperationException If {@code value} is {@link KaitaiStruct}
    *         and it was compiled without debug info (which includes position information)
    */
-  protected ChunkNode create(String name, Object value, Span span, boolean isSequential) throws ReflectiveOperationException {
+  protected ChunkNode create(String name, Object value, Class<?> valueClass, Span span, boolean isSequential) throws ReflectiveOperationException {
     return value instanceof KaitaiStruct
       ? new StructNode(name, (KaitaiStruct)value, this, span, isSequential)
-      : new SimpleNode(name, value, this, span, isSequential);
+      : new SimpleNode(name, value, valueClass, this, span, isSequential);
   }
 }

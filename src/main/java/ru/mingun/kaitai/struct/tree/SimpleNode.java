@@ -38,13 +38,20 @@ public class SimpleNode extends ChunkNode {
   /** Parsed value of non-constructed type. */
   private final Object value;
 
-  SimpleNode(String name, Object value, ChunkNode parent, Span span, boolean isSequential) {
+  /** Static type of {@code value}, to identify the type when value is null. */
+  private final Class<?> valueClass;
+
+  SimpleNode(String name, Object value, Class<?> valueClass, ChunkNode parent, Span span, boolean isSequential) {
     super(name, parent, span, isSequential);
     this.value = value;
+    this.valueClass = valueClass;
   }
 
   @Override
   public Object getValue() { return value; }
+
+  /** Static type of {@code value}, to identify the type when value is {@code null}. */
+  public Class<?> getValueClass() { return valueClass; }
 
   //<editor-fold defaultstate="collapsed" desc="TreeNode">
   @Override

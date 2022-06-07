@@ -26,6 +26,8 @@ package ru.mingun.kaitai.struct.tree;
 import io.kaitai.struct.KaitaiStruct;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import static java.util.Collections.enumeration;
@@ -170,9 +172,15 @@ public class StructNode extends ChunkNode {
     if (isPresent && List.class.isAssignableFrom(getter.getReturnType())) {
       final List<Integer> sa = arrStart.get(name);
       final List<Integer> ea = arrEnd.get(name);
-      return new ListNode(name, (List<?>)field, this, span, isSequential, sa, ea);
+
+      // We are sure that return type is a generic with one Class parameter, because KaitaiStruct
+      // java generator generates fields/methods with an ArrayList<XXX> static type
+      final ParameterizedType returnType = (ParameterizedType) getter.getGenericReturnType();
+      final Type elementType = returnType.getActualTypeArguments()[0];
+
+      return new ListNode(name, (List<?>) field, (Class<?>) elementType, this,  span, isSequential, sa, ea);
     }
-    return create(name, field, span, isSequential);
+    return create(name, field, getter.getReturnType(), span, isSequential);
   }
 
   private ArrayList<ChunkNode> init() {

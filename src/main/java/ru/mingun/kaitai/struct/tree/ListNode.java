@@ -38,6 +38,9 @@ import ru.mingun.kaitai.struct.Span;
  */
 public class ListNode extends ChunkNode {
   private final List<?> value;
+  /** The type of elements of the {@code value}. */
+  private final Class<?> elementClass;
+
   /** Lazy populated list of child nodes. */
   private List<ChunkNode> children;
   /** Start positions in root stream of each value object in {@link #value}. */
@@ -45,7 +48,7 @@ public class ListNode extends ChunkNode {
   /** Endo positions in root stream of each value object in {@link #value} (exclusive). */
   private final List<Integer> arrEnd;
 
-  ListNode(String name, List<?> value, StructNode parent,
+  ListNode(String name, List<?> value, Class<?> valueClass, StructNode parent,
     Span span,
     boolean isSequential,
     List<Integer> arrStart,
@@ -53,6 +56,7 @@ public class ListNode extends ChunkNode {
   ) {
     super(name, parent, span, isSequential);
     this.value = value;
+    this.elementClass = valueClass;
     this.arrStart = arrStart;
     this.arrEnd   = arrEnd;
   }
@@ -100,7 +104,7 @@ public class ListNode extends ChunkNode {
           final int s = arrStart.get(index);
           final int e = arrEnd.get(index);
           final Span span = new Span(s, e);
-          children.add(create("[" + index + ']', obj, span, isSequential));
+          children.add(create("[" + index + ']', obj, elementClass, span, isSequential));
           ++index;
         } catch (ReflectiveOperationException ex) {
           throw new UnsupportedOperationException("Can't get list value at index " + index, ex);
