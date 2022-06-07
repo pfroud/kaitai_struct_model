@@ -27,8 +27,6 @@ import javax.swing.tree.TreeNode;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 import static java.util.Collections.enumeration;
 
@@ -40,6 +38,10 @@ import static java.util.Collections.enumeration;
  */
 public class ListNode extends ChunkNode {
   private final List<?> value;
+
+  /** The parameter type of <code>value</code>. */
+  private final Class<?> valueClass;
+
   /** Lazy populated list of child nodes. */
   private List<ChunkNode> children;
   /** Start positions in root stream of each value object in {@link #value}. */
@@ -47,13 +49,14 @@ public class ListNode extends ChunkNode {
   /** Endo positions in root stream of each value object in {@link #value} (exclusive). */
   private final List<Integer> arrEnd;
 
-  ListNode(String name, List<?> value, StructNode parent,
+  ListNode(String name, List<?> value, Class<?> valueClass, StructNode parent,
     long offset, long start, long end,
     List<Integer> arrStart,
     List<Integer> arrEnd
   ) {
     super(name, parent, offset, start, end);
     this.value = value;
+    this.valueClass = valueClass;
     this.arrStart = arrStart;
     this.arrEnd   = arrEnd;
   }
@@ -94,20 +97,6 @@ public class ListNode extends ChunkNode {
         try {
           final int s = arrStart.get(index);
           final int e = arrEnd.get(index);
-
-          /*
-           We cannot access the generic type of the List at runtime due to
-           type erasure. Instead, look for a non-null element in the List,
-           which will tell us the type of the whole list.
-           */
-          final Class<?> valueClass;
-          final Optional<?> nonNullElement = value.stream().filter(Objects::nonNull).findAny();
-          if (nonNullElement.isPresent()) {
-            valueClass = nonNullElement.get().getClass();
-          } else {
-            valueClass = null;
-          }
-
           children.add(create("[" + index + ']', obj, valueClass, 0, s, e));
           ++index;
         } catch (ReflectiveOperationException ex) {

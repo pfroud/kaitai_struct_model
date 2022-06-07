@@ -77,9 +77,9 @@ public abstract class ChunkNode extends ValueNode {
    * @throws ReflectiveOperationException If {@code value} is {@link KaitaiStruct}
    *         and it was compiled without debug info (which includes position information)
    */
-  protected ChunkNode create(String name, Object value, Class<?> classOfValue, long offset, long start, long end) throws ReflectiveOperationException {
+  protected ChunkNode create(String name, Object value, Class<?> valueClass, long offset, long start, long end) throws ReflectiveOperationException {
     return value instanceof KaitaiStruct
       ? new StructNode(name, (KaitaiStruct)value, this, offset, start, end)
-      : new SimpleNode(name, value, classOfValue, this, offset, start, end);
+      : new SimpleNode(name, value, valueClass, this, offset, start, end);
   }
 }

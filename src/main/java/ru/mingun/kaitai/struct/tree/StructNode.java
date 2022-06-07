@@ -26,6 +26,8 @@ package ru.mingun.kaitai.struct.tree;
 import io.kaitai.struct.KaitaiStruct;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import static java.util.Collections.enumeration;
@@ -160,7 +162,11 @@ public class StructNode extends ChunkNode {
     if (List.class.isAssignableFrom(getter.getReturnType())) {
       final List<Integer> sa = arrStart.get(name);
       final List<Integer> se = arrEnd.get(name);
-      return new ListNode(name, (List<?>)field, this, offset, s, e, sa, se);
+
+      final ParameterizedType returnType = (ParameterizedType) getter.getGenericReturnType();
+      final Type typeArgument = returnType.getActualTypeArguments()[0];
+
+      return new ListNode(name, (List<?>) field, (Class<?>) typeArgument, this, offset, s, e, sa, se);
     }
     return create(name, field, getter.getReturnType(), start, s, e);
   }
