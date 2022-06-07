@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2020-2021 Mingun.
+ * Copyright 2020-2022 Mingun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@ package ru.mingun.kaitai.struct.tree;
 
 import io.kaitai.struct.KaitaiStruct;
 import javax.swing.tree.TreeNode;
+import ru.mingun.kaitai.struct.Span;
 
 /**
  * Base node for all nodes in the tree, that represents parts of message in
@@ -33,53 +34,35 @@ import javax.swing.tree.TreeNode;
  * @author Mingun
  */
 public abstract class ChunkNode extends ValueNode {
-  /** Start offset of parent node in root stream (i.e. global offset). */
-  protected final long offset;
-  /** Position in parsed stream where this node begins. */
-  protected final long start;
-  /** Position in parsed stream where this node ends (exclusive). */
-  protected final long end;
+  /** Space that this node occupies in a stream. */
+  protected final Span span;
 
-  ChunkNode(String name, TreeNode parent, long offset, long start, long end) {
+  ChunkNode(String name, TreeNode parent, Span span) {
     super(name, parent);
-    this.offset = offset;
-    this.start = start;
-    this.end = end;
+    this.span = span;
   }
 
-  /** Position in root stream where parent of this node begins. */
-  public long getParentStart() { return offset; }
-  /** Position in root stream where this node begins. */
-  public long getStart() { return offset + start; }
-  /** Position position in root stream where this node ends (exclusive). */
-  public long getEnd() { return offset + end; }
-  /** Local position in parsed stream where this node begins. */
-  public long getLocalStart() { return start; }
-  /** Local position in parsed stream where this node ends (exclusive). */
-  public long getLocalEnd() { return end; }
   /**
-   * Returns occupied size in bytes in the stream.
-   *
-   * @return Size of this node in bytes
+   * Space that this node occupies in a stream or {@code null} for missing
+   * optional fields and calculated values ("value" instances).
    */
-  public long size() { return end - start; }
+  public Span getSpan() { return span; }
 
   /**
    * Creates tree node for object.
    *
    * @param name Name of field, under which this field arrives
    * @param value Value of object
-   * @param offset Byte offset from begin of root stream of parent node
-   * @param start Byte offset from begin of stream, where that object starts
-   * @param end Byte offset from begin of stream, where that object ends (exclusive)
+   * @param span Space that node is occupied in a stream
+   *
    * @return
    *
    * @throws ReflectiveOperationException If {@code value} is {@link KaitaiStruct}
    *         and it was compiled without debug info (which includes position information)
    */
-  protected ChunkNode create(String name, Object value, long offset, long start, long end) throws ReflectiveOperationException {
+  protected ChunkNode create(String name, Object value, Span span) throws ReflectiveOperationException {
     return value instanceof KaitaiStruct
-      ? new StructNode(name, (KaitaiStruct)value, this, offset, start, end)
-      : new SimpleNode(name, value, this, offset, start, end);
+      ? new StructNode(name, (KaitaiStruct)value, this, span)
+      : new SimpleNode(name, value, this, span);
   }
 }

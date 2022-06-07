@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2020-2021 Mingun.
+ * Copyright 2020-2022 Mingun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@ package ru.mingun.kaitai.struct.tree;
 import static java.util.Collections.emptyEnumeration;
 import java.util.Enumeration;
 import javax.swing.tree.TreeNode;
+import ru.mingun.kaitai.struct.Span;
 
 /**
  * Node, that represents any simple object (such as {@code byte[]}, {@link Integer}
@@ -37,8 +38,8 @@ public class SimpleNode extends ChunkNode {
   /** Parsed value of non-constructed type. */
   private final Object value;
 
-  SimpleNode(String name, Object value, ChunkNode parent, long offset, long start, long end) {
-    super(name, parent, offset, start, end);
+  SimpleNode(String name, Object value, ChunkNode parent, Span span) {
+    super(name, parent, span);
     this.value = value;
   }
 
@@ -70,7 +71,12 @@ public class SimpleNode extends ChunkNode {
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(name);
-    toString(sb.append(" [offset = ").append(getStart()).append("; size = ").append(size()).append("] = "), value);
+    if (span != null) {
+      sb.append(" [offset = ").append(span.getStart())
+        .append("; size = ").append(span.size())
+        .append(']');
+    }
+    toString(sb.append(" = "), value);
     return sb.toString();
   }
 }
