@@ -65,10 +65,10 @@ public class StructNode extends ChunkNode {
    *         debug info (which includes position information)
    */
   public StructNode(String name, KaitaiStruct value, TreeNode parent) throws ReflectiveOperationException {
-    this(name, value, parent, 0, 0, value._io().pos());
+    this(name, value, parent, 0, 0, value._io().pos(), true);
   }
-  StructNode(String name, KaitaiStruct value, TreeNode parent, long offset, long start, long end) throws ReflectiveOperationException {
-    super(name, parent, offset, start, end);
+  StructNode(String name, KaitaiStruct value, TreeNode parent, long offset, long start, long end, boolean isSequential) throws ReflectiveOperationException {
+    super(name, parent, offset, start, end, isSequential);
     final Class<?> clazz = value.getClass();
     // getDeclaredMethods() doesn't guaranties any particular order, so sort fields
     // according order in the type
@@ -152,7 +152,7 @@ public class StructNode extends ChunkNode {
    * @throws ReflectiveOperationException If kaitai class was genereted without
    *         debug info (which includes position information)
    */
-  private ChunkNode create(Method getter) throws ReflectiveOperationException {
+  private ChunkNode create(Method getter, boolean sequentialNotInstance) throws ReflectiveOperationException {
     final Object field = getter.invoke(value);
     final String name  = getter.getName();
     final int s = attrStart.get(name);
@@ -160,9 +160,9 @@ public class StructNode extends ChunkNode {
     if (List.class.isAssignableFrom(getter.getReturnType())) {
       final List<Integer> sa = arrStart.get(name);
       final List<Integer> se = arrEnd.get(name);
-      return new ListNode(name, (List<?>)field, this, offset, s, e, sa, se);
+      return new ListNode(name, (List<?>)field, this, offset, s, e, sa, se, sequentialNotInstance);
     }
-    return create(name, field, start, s, e);
+    return create(name, field, start, s, e, sequentialNotInstance);
   }
 
   private ArrayList<ChunkNode> init() {
@@ -170,10 +170,10 @@ public class StructNode extends ChunkNode {
       children = new ArrayList<>();
       try {
         for (final Method getter : fields) {
-          children.add(create(getter));
+          children.add(create(getter, true));
         }
         for (final Method getter : instances) {
-          children.add(create(getter));
+          children.add(create(getter, false));
         }
       } catch (ReflectiveOperationException ex) {
         throw new UnsupportedOperationException(ex);

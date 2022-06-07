@@ -40,11 +40,15 @@ public abstract class ChunkNode extends ValueNode {
   /** Position in parsed stream where this node ends (exclusive). */
   protected final long end;
 
-  ChunkNode(String name, TreeNode parent, long offset, long start, long end) {
+  /** True if this node came from <code>seq</code>, false if it came from <code>instances</code>. */
+  public final boolean isSequential;
+
+  ChunkNode(String name, TreeNode parent, long offset, long start, long end, boolean isSequential) {
     super(name, parent);
     this.offset = offset;
     this.start = start;
     this.end = end;
+    this.isSequential = isSequential;
   }
 
   /** Position in root stream where parent of this node begins. */
@@ -77,9 +81,9 @@ public abstract class ChunkNode extends ValueNode {
    * @throws ReflectiveOperationException If {@code value} is {@link KaitaiStruct}
    *         and it was compiled without debug info (which includes position information)
    */
-  protected ChunkNode create(String name, Object value, long offset, long start, long end) throws ReflectiveOperationException {
+  protected ChunkNode create(String name, Object value, long offset, long start, long end, boolean sequentialNotInstance) throws ReflectiveOperationException {
     return value instanceof KaitaiStruct
-      ? new StructNode(name, (KaitaiStruct)value, this, offset, start, end)
-      : new SimpleNode(name, value, this, offset, start, end);
+      ? new StructNode(name, (KaitaiStruct)value, this, offset, start, end, sequentialNotInstance)
+      : new SimpleNode(name, value, this, offset, start, end, sequentialNotInstance);
   }
 }

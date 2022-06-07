@@ -47,9 +47,10 @@ public class ListNode extends ChunkNode {
   ListNode(String name, List<?> value, StructNode parent,
     long offset, long start, long end,
     List<Integer> arrStart,
-    List<Integer> arrEnd
+    List<Integer> arrEnd,
+    boolean isSequential
   ) {
-    super(name, parent, offset, start, end);
+    super(name, parent, offset, start, end, isSequential);
     this.value = value;
     this.arrStart = arrStart;
     this.arrEnd   = arrEnd;
@@ -91,7 +92,7 @@ public class ListNode extends ChunkNode {
         try {
           final int s = arrStart.get(index);
           final int e = arrEnd.get(index);
-          children.add(create("[" + index + ']', obj, 0, s, e));
+          children.add(create("[" + index + ']', obj, 0, s, e, isSequential));
           ++index;
         } catch (ReflectiveOperationException ex) {
           throw new UnsupportedOperationException("Can't get list value at index " + index, ex);
