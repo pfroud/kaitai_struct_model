@@ -93,6 +93,7 @@ class StructNode {
 }
 class ListNode {
   +getValue() List
+  +getElementClass() Class
 }
 ```
 
