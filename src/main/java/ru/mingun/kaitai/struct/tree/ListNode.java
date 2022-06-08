@@ -64,6 +64,9 @@ public class ListNode extends ChunkNode {
   @Override
   public List<?> getValue() { return value; }
 
+  /** Returns a static class of the list elements; actual elements could be subclasses of this. */
+  public Class<?> getElementClass() { return elementClass; }
+
   //<editor-fold defaultstate="collapsed" desc="TreeNode">
   @Override
   public ChunkNode getChildAt(int childIndex) { return init().get(childIndex); }
