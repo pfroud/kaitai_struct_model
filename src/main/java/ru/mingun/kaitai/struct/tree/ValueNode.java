@@ -49,6 +49,12 @@ public abstract class ValueNode implements TreeNode {
    */
   public abstract Object getValue();
 
+  /**
+   * Returns the Java field name (camelCased name of the Kaitai Struct name, defined in the spec)
+   * or a string {@code "[<array index>]"} for array elements.
+   */
+  public String getName() { return name; }
+
   //<editor-fold defaultstate="collapsed" desc="TreeNode">
   @Override
   public TreeNode getParent() { return parent; }
