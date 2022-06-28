@@ -162,6 +162,13 @@ public class StructNode extends ChunkNode {
     final Object field = getter.invoke(value);
     final String name  = getter.getName();
 
+    // Optional field could be not present in the maps if it is missing from the input.
+    // Also, "value" instances are not present in the maps.
+    final Integer s = attrStart.get(name);
+    final Integer e = attrEnd.get(name);
+    final boolean isPresent = s != null && e != null;
+    final Span span = isPresent ? new Span(s, e) : null;
+
     if (List.class.isAssignableFrom(getter.getReturnType())) {
       final List<Integer> sa = arrStart.get(name);
       final List<Integer> ea = arrEnd.get(name);
