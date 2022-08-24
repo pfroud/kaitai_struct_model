@@ -73,7 +73,7 @@ public class ParamNode extends ValueNode {
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(name);
-    toString(sb.append(" = "), value);
+    appendValue(sb.append(" = "), value);
     return sb.toString();
   }
 }

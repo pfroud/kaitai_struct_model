@@ -60,7 +60,7 @@ public abstract class ValueNode implements TreeNode {
   public TreeNode getParent() { return parent; }
   //</editor-fold>
 
-  protected static void toString(StringBuilder sb, Object value) {
+  protected static void appendValue(StringBuilder sb, Object value) {
     if (value instanceof byte[]) {
       for (final byte b : (byte[])value) {
         sb.append(String.format("%02x ", b));

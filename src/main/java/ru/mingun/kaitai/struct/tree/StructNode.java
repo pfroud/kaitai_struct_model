@@ -139,14 +139,12 @@ public class StructNode extends ChunkNode {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(name);
-    sb.append(" [").append(value.getClass().getSimpleName())
-      .append("; fields = ").append(fields.size());
-    if (span != null) {
-      sb.append("; offset = ").append(span.getStart())
-        .append("; size = ").append(span.size());
-    }
-    return sb.append(']').toString();
+    final StringBuilder sb = new StringBuilder();
+      sb.append(name)
+              .append(" [")
+              .append(value.getClass().getSimpleName())
+              .append("]");
+    return sb.toString();
   }
 
   /**
