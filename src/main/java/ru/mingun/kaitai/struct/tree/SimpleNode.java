@@ -27,6 +27,7 @@ import ru.mingun.kaitai.struct.Span;
 
 import javax.swing.tree.TreeNode;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Enumeration;
 
 import static java.util.Collections.emptyEnumeration;
@@ -104,14 +105,15 @@ public class SimpleNode extends ChunkNode {
             sb.append("<b>").append(value).append("</b>");
 
             try {
+                // get the numeric value of the enum
                 final Field idField = value.getClass().getDeclaredField("id");
                 idField.setAccessible(true);
-                final Object get = idField.get(value);
-                final long castLong = (long) get;
-                sb.append("<font color=").append(NodeStyle.COLOR_ENUM_DESCRIPTION).append(">(0x")
-                        .append(Long.toHexString(castLong))
+                final Object idValue = idField.get(value);
+                final long castToLong = (long) idValue;
+                sb.append(" <font color=").append(NodeStyle.COLOR_ENUM_DESCRIPTION).append(">(0x")
+                        .append(Long.toHexString(castToLong))
                         .append(" = ")
-                        .append(castLong)
+                        .append(castToLong)
                         .append(")</font>");
             } catch (ReflectiveOperationException ex) {
                 ex.printStackTrace();
@@ -120,32 +122,52 @@ public class SimpleNode extends ChunkNode {
         } else if (value instanceof String || value instanceof Float || value instanceof Double || value instanceof Boolean) {
             sb.append("<b>").append(value).append("</b>");
 
-        } else if(value instanceof Byte){
-            final byte b = (byte) value;
-            sb.append("<b>0x").append(Integer.toHexString(b))
-                    .append("<font color=").append(NodeStyle.COLOR_INTEGER_VALUE).append("> = ")
-                    .append(b).append("</font>").append("</b>");
+        } else if (value instanceof Byte) {
+            appendIntegerType(sb, (byte) value);
 
-        } else if(value instanceof Short){
-            final short s = (short) value;
-            sb.append("<b>0x").append(Integer.toHexString(s))
-                    .append("<font color=").append(NodeStyle.COLOR_INTEGER_VALUE).append("> = ")
-                    .append(s).append("</font>").append("</b>");
+        } else if (value instanceof Short) {
+            appendIntegerType(sb, (short) value);
 
-        } else if(value instanceof Integer){
-            final int i = (int) value;
-            sb.append("<b>0x").append(Integer.toHexString(i))
-                    .append("<font color=").append(NodeStyle.COLOR_INTEGER_VALUE).append("> = ")
-                    .append(i).append("</font>").append("</b>");
+        } else if (value instanceof Integer) {
+            appendIntegerType(sb, (int) value);
 
-        } else if(value instanceof Long){
-            final long l = (long) value;
-            sb.append("<b>0x").append(Long.toHexString(l))
-                    .append("<font color=").append(NodeStyle.COLOR_INTEGER_VALUE).append("> = ")
-                    .append(l).append("</font>").append("</b>");
-        } else{
-            System.out.println("Don't know what to do with "+value.getClass() +": "+value);
+        } else if (value instanceof Long) {
+            appendIntegerType(sb, (long) value);
+
+        } else if (value instanceof byte[]) {
+            final byte[] byteArray = (byte[]) value;
+            sb.append("[");
+
+            final int maxIter = Math.min(byteArray.length, NodeStyle.MAX_BYTE_ARRAY_LENGTH_TO_DISPLAY);
+            for (int i = 0; i < maxIter; i++) {
+                sb.append(byteArray[i]);
+                if (i < maxIter - 1) {
+                    sb.append(", ");
+                } else if (i == maxIter - 1 && byteArray.length > maxIter) {
+                    sb.append(", ...");
+                }
+            }
+            sb.append("]");
+
+        } else if (value instanceof ArrayList) {
+            /*
+            ArrayLists appear because list value instances are erronously
+            made into SimpleNode instead of ListNode.
+            https://github.com/Mingun/kaitai_struct_model/issues/14
+            https://github.com/Mingun/kaitai_struct_model/pull/15
+             */
+            sb.append("ArrayList");
+
+        } else {
+            System.out.println("SimpleNode.java: Don't know what to do with " + value.getClass().getName() + ": " + value);
         }
         return sb.toString();
+    }
+
+    private static void appendIntegerType(StringBuilder sb, long n) {
+        // use this for byte, short, int, and long
+        sb.append("<b>0x").append(Long.toHexString(n))
+                .append("<font color=").append(NodeStyle.COLOR_INTEGER_VALUE).append("> = ")
+                .append(n).append("</font>").append("</b>");
     }
 }

@@ -89,14 +89,13 @@ public class ListNode extends ChunkNode {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(name);
-    sb.append(" [count = ").append(value.size());
-    if (span != null) {
-      sb.append("; offset = ").append(span.getStart())
-        .append("; size = ").append(span.size());
+        return new StringBuilder()
+                .append(name)
+                .append(" (size = ")
+                .append(value.size())
+                .append(')')
+                .toString();
     }
-    return sb.append(']').toString();
-  }
 
   private List<ChunkNode> init() {
     if (children == null) {
