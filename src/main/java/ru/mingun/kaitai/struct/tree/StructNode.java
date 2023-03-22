@@ -86,6 +86,15 @@ public class StructNode extends ChunkNode {
       if (Modifier.isStatic(m.getModifiers()) || m.getName().charAt(0) == '_') {
         continue;
       }
+
+      /*
+      Skip getter methods, which are added when using the serialization branch
+      of the Kaitai Struct compiler.
+      */
+      if (m.getParameterCount() > 0) {
+          continue;
+      }
+
       if (order.contains(m.getName())) {
         fields.add(m);
       } else {
