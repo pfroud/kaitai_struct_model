@@ -35,7 +35,7 @@ import javax.swing.tree.TreePath;
  *
  * @author Mingun
  */
-public class StructModel implements TreeModel {
+public class KaitaiStructTreeModel implements TreeModel {
   private final StructNode root;
   private final EventListenerList listeners = new EventListenerList();
 
@@ -47,7 +47,7 @@ public class StructModel implements TreeModel {
    * @throws ReflectiveOperationException If kaitai class was genereted without
    *         debug info (which includes position information)
    */
-  public StructModel(KaitaiStruct value) throws ReflectiveOperationException {
+  public KaitaiStructTreeModel(KaitaiStruct value) throws ReflectiveOperationException {
     this("<root>", value);
   }
 
@@ -60,7 +60,7 @@ public class StructModel implements TreeModel {
    * @throws ReflectiveOperationException If kaitai class was genereted without
    *         debug info (which includes position information)
    */
-  public StructModel(String name, KaitaiStruct value) throws ReflectiveOperationException {
+  public KaitaiStructTreeModel(String name, KaitaiStruct value) throws ReflectiveOperationException {
     this.root = new StructNode(name, value, null);
   }
 
