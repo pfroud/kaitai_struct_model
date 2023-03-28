@@ -140,7 +140,7 @@ public class SimpleNode extends ChunkNode {
 
             final int maxIter = Math.min(byteArray.length, NodeStyle.MAX_BYTE_ARRAY_LENGTH_TO_DISPLAY);
             for (int i = 0; i < maxIter; i++) {
-                sb.append(byteArray[i]);
+                sb.append(String.format("0x%02X", byteArray[i]));
                 if (i < maxIter - 1) {
                     sb.append(", ");
                 } else if (i == maxIter - 1 && byteArray.length > maxIter) {
