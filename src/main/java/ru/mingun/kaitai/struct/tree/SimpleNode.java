@@ -111,7 +111,7 @@ public class SimpleNode extends ChunkNode {
                 final Object idValue = idField.get(value);
                 final long castToLong = (long) idValue;
                 sb.append(" <font color=").append(NodeStyle.COLOR_ENUM_DESCRIPTION).append(">(0x")
-                        .append(Long.toHexString(castToLong))
+                        .append(Long.toHexString(castToLong).toUpperCase())
                         .append(" = ")
                         .append(castToLong)
                         .append(")</font>");
@@ -166,7 +166,7 @@ public class SimpleNode extends ChunkNode {
 
     private static void appendIntegerType(StringBuilder sb, long n) {
         // use this for byte, short, int, and long
-        sb.append("<b>0x").append(Long.toHexString(n))
+        sb.append("<b>0x").append(Long.toHexString(n).toUpperCase())
                 .append("<font color=").append(NodeStyle.COLOR_INTEGER_VALUE).append("> = ")
                 .append(n).append("</font>").append("</b>");
     }

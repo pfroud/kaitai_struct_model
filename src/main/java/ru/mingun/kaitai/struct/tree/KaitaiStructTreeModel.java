@@ -39,6 +39,18 @@ public class KaitaiStructTreeModel implements TreeModel {
   private final StructNode root;
   private final EventListenerList listeners = new EventListenerList();
 
+    /**
+    * If an instance or parameter points to a Kaitai Struct object which contains the instance or
+    * parameter as a descendant, it will crash with a StackOverflowError. In that case use the HIDE
+    * option, which will prevent all instances and parameters being processed.
+    * <br>
+    * We cannot distinguish between instances and parameters until this pull request is merged:
+    * https://github.com/kaitai-io/kaitai_struct_java_runtime/issues/22
+    */
+    public enum VisibilityOfInstancesAndParameters {
+        SHOW, HIDE;
+    }
+
   /**
    * Creates read-only model for specified structure with name {@code "<root>"}.
    *
@@ -47,8 +59,12 @@ public class KaitaiStructTreeModel implements TreeModel {
    * @throws ReflectiveOperationException If kaitai class was genereted without
    *         debug info (which includes position information)
    */
+  public KaitaiStructTreeModel(KaitaiStruct value, VisibilityOfInstancesAndParameters visibilityOfInstancesAndParameters) throws ReflectiveOperationException {
+    this("<root>", value, visibilityOfInstancesAndParameters);
+  }
+
   public KaitaiStructTreeModel(KaitaiStruct value) throws ReflectiveOperationException {
-    this("<root>", value);
+    this("<root>", value, VisibilityOfInstancesAndParameters.SHOW);
   }
 
   /**
@@ -60,8 +76,12 @@ public class KaitaiStructTreeModel implements TreeModel {
    * @throws ReflectiveOperationException If kaitai class was genereted without
    *         debug info (which includes position information)
    */
+  public KaitaiStructTreeModel(String name, KaitaiStruct value, VisibilityOfInstancesAndParameters visibilityOfInstancesAndParameters) throws ReflectiveOperationException {
+    this.root = new StructNode(name, value, null, visibilityOfInstancesAndParameters);
+  }
+
   public KaitaiStructTreeModel(String name, KaitaiStruct value) throws ReflectiveOperationException {
-    this.root = new StructNode(name, value, null);
+    this.root = new StructNode(name, value, null, VisibilityOfInstancesAndParameters.SHOW);
   }
 
   //<editor-fold defaultstate="collapsed" desc="TreeModel">

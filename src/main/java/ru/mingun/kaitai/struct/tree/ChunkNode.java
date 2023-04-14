@@ -26,6 +26,7 @@ package ru.mingun.kaitai.struct.tree;
 import io.kaitai.struct.KaitaiStruct;
 import javax.swing.tree.TreeNode;
 import ru.mingun.kaitai.struct.Span;
+import ru.mingun.kaitai.struct.tree.KaitaiStructTreeModel.VisibilityOfInstancesAndParameters;
 
 /**
  * Base node for all nodes in the tree, that represents parts of message in
@@ -75,9 +76,10 @@ public abstract class ChunkNode extends ValueNode {
    * @throws ReflectiveOperationException If {@code value} is {@link KaitaiStruct}
    *         and it was compiled without debug info (which includes position information)
    */
-  protected ChunkNode create(String name, Object value, Class<?> valueClass, Span span, boolean isSequential) throws ReflectiveOperationException {
+  protected ChunkNode create(String name, Object value, Class<?> valueClass, Span span,
+          boolean isSequential, VisibilityOfInstancesAndParameters visibilityOfInstancesAndParameters) throws ReflectiveOperationException {
     return value instanceof KaitaiStruct
-      ? new StructNode(name, (KaitaiStruct)value, this, span, isSequential)
+      ? new StructNode(name, (KaitaiStruct)value, this, span, isSequential, visibilityOfInstancesAndParameters)
       : new SimpleNode(name, value, valueClass, this, span, isSequential);
   }
 }

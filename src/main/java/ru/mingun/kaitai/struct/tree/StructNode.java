@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.tree.TreeNode;
 import ru.mingun.kaitai.struct.Span;
+import ru.mingun.kaitai.struct.tree.KaitaiStructTreeModel.VisibilityOfInstancesAndParameters;
 
 /**
  * Node, that represents single {@link KaitaiStruct} object. Each struct field
@@ -48,7 +49,7 @@ public class StructNode extends ChunkNode {
   /** Array of getters of fields for stored fields. */
   private final ArrayList<Method> fields;
   /** Array of getters of fields for parameters and instances. */
-  private final ArrayList<Method> instances;
+  private final ArrayList<Method> instancesAndParameters;
   /** Lazy populated list of child nodes. */
   private ArrayList<ChunkNode> children;
 
@@ -56,6 +57,7 @@ public class StructNode extends ChunkNode {
   private final Map<String, Integer> attrEnd;
   private final Map<String, ? extends List<Integer>> arrStart;
   private final Map<String, ? extends List<Integer>> arrEnd;
+  private final VisibilityOfInstancesAndParameters visibilityOfInstancesAndParameters;
 
   /**
    * Constructor used to create node for representing root structure.
@@ -67,10 +69,11 @@ public class StructNode extends ChunkNode {
    * @throws ReflectiveOperationException If kaitai class was genereted without
    *         debug info (which includes position information)
    */
-  public StructNode(String name, KaitaiStruct value, TreeNode parent) throws ReflectiveOperationException {
-    this(name, value, parent, new Span(0, value._io().pos()), true);
+  public StructNode(String name, KaitaiStruct value, TreeNode parent, VisibilityOfInstancesAndParameters visibilityOfInstancesAndParameters) throws ReflectiveOperationException {
+    this(name, value, parent, new Span(0, value._io().pos()), true, visibilityOfInstancesAndParameters);
   }
-  StructNode(String name, KaitaiStruct value, TreeNode parent, Span span, boolean isSequential) throws ReflectiveOperationException {
+  StructNode(String name, KaitaiStruct value, TreeNode parent, Span span, boolean isSequential,
+          VisibilityOfInstancesAndParameters visibilityOfInstancesAndParameters) throws ReflectiveOperationException {
     super(name, parent, span, isSequential);
     final Class<?> clazz = value.getClass();
     // getDeclaredMethods() doesn't guaranties any particular order, so sort fields
@@ -78,7 +81,8 @@ public class StructNode extends ChunkNode {
     final String[] names = (String[])clazz.getField("_seqFields").get(null);
     final List<String> order = Arrays.asList(names);
 
-    this.instances = new ArrayList<>();
+
+    this.instancesAndParameters = new ArrayList<>();
     this.fields = new ArrayList<>();
     for (final Method m : clazz.getDeclaredMethods()) {
       // Skip static methods, i.e. "fromFile"
@@ -97,9 +101,9 @@ public class StructNode extends ChunkNode {
 
       if (order.contains(m.getName())) {
         fields.add(m);
-      } else {
-        // TODO: Distinguish between parameters and instances
-        instances.add(m);
+      } else if (visibilityOfInstancesAndParameters == VisibilityOfInstancesAndParameters.SHOW) {
+          // TODO: Distinguish between parameters and instances
+          instancesAndParameters.add(m);
       }
     }
 
@@ -115,6 +119,7 @@ public class StructNode extends ChunkNode {
     this.attrEnd   = (Map<String, Integer>)clazz.getDeclaredField("_attrEnd").get(value);
     this.arrStart  = (Map<String, ? extends List<Integer>>)clazz.getDeclaredField("_arrStart").get(value);
     this.arrEnd    = (Map<String, ? extends List<Integer>>)clazz.getDeclaredField("_arrEnd").get(value);
+    this.visibilityOfInstancesAndParameters = visibilityOfInstancesAndParameters;
   }
 
   @Override
@@ -125,7 +130,7 @@ public class StructNode extends ChunkNode {
   public TreeNode getChildAt(int childIndex) { return init().get(childIndex); }
 
   @Override
-  public int getChildCount() { return fields.size() + instances.size(); }
+  public int getChildCount() { return fields.size() + instancesAndParameters.size(); }
 
   @Override
   public int getIndex(TreeNode node) {
@@ -165,7 +170,7 @@ public class StructNode extends ChunkNode {
    * @throws ReflectiveOperationException If kaitai class was genereted without
    *         debug info (which includes position information)
    */
-  private ChunkNode create(Method getter, boolean isSequential) throws ReflectiveOperationException {
+  private ChunkNode create(Method getter, boolean isSequential, VisibilityOfInstancesAndParameters visibilityOfInstancesAndParameters) throws ReflectiveOperationException {
     final Object field = getter.invoke(value);
     final String name  = getter.getName();
     // Optional field could be not presented in the maps if it missing in input
@@ -185,9 +190,10 @@ public class StructNode extends ChunkNode {
       final ParameterizedType returnType = (ParameterizedType) getter.getGenericReturnType();
       final Type elementType = returnType.getActualTypeArguments()[0];
 
-      return new ListNode(name, (List<?>) field, (Class<?>) elementType, this,  span, isSequential, sa, ea);
+      return new ListNode(name, (List<?>) field, (Class<?>) elementType, this,  span, isSequential,
+              sa, ea, visibilityOfInstancesAndParameters);
     }
-    return create(name, field, getter.getReturnType(), span, isSequential);
+    return create(name, field, getter.getReturnType(), span, isSequential, visibilityOfInstancesAndParameters);
   }
 
   private ArrayList<ChunkNode> init() {
@@ -195,10 +201,12 @@ public class StructNode extends ChunkNode {
       children = new ArrayList<>();
       try {
         for (final Method getter : fields) {
-          children.add(create(getter, true));
+          children.add(create(getter, true, visibilityOfInstancesAndParameters));
         }
-        for (final Method getter : instances) {
-          children.add(create(getter, false));
+        if (visibilityOfInstancesAndParameters == VisibilityOfInstancesAndParameters.SHOW) {
+            for (final Method getter : instancesAndParameters) {
+                children.add(create(getter, false, visibilityOfInstancesAndParameters));
+            }
         }
       } catch (ReflectiveOperationException ex) {
         throw new UnsupportedOperationException(ex);

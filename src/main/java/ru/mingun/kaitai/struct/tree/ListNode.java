@@ -29,6 +29,7 @@ import java.util.Enumeration;
 import java.util.List;
 import javax.swing.tree.TreeNode;
 import ru.mingun.kaitai.struct.Span;
+import ru.mingun.kaitai.struct.tree.KaitaiStructTreeModel.VisibilityOfInstancesAndParameters;
 
 /**
  * Node, that represents a repeated data in struct definition. An each repeated value
@@ -47,18 +48,21 @@ public class ListNode extends ChunkNode {
   private final List<Integer> arrStart;
   /** Endo positions in root stream of each value object in {@link #value} (exclusive). */
   private final List<Integer> arrEnd;
+  private final VisibilityOfInstancesAndParameters visibilityOfInstancesAndParameters;
 
   ListNode(String name, List<?> value, Class<?> valueClass, StructNode parent,
     Span span,
     boolean isSequential,
     List<Integer> arrStart,
-    List<Integer> arrEnd
+    List<Integer> arrEnd,
+    VisibilityOfInstancesAndParameters visibilityOfInstancesAndParameters
   ) {
     super(name, parent, span, isSequential);
     this.value = value;
     this.elementClass = valueClass;
     this.arrStart = arrStart;
     this.arrEnd   = arrEnd;
+    this.visibilityOfInstancesAndParameters = visibilityOfInstancesAndParameters;
   }
 
   @Override
@@ -106,7 +110,7 @@ public class ListNode extends ChunkNode {
           final int s = arrStart.get(index);
           final int e = arrEnd.get(index);
           final Span span = new Span(s, e);
-          children.add(create("[" + index + ']', obj, elementClass, span, isSequential));
+          children.add(create("[" + index + ']', obj, elementClass, span, isSequential, visibilityOfInstancesAndParameters));
           ++index;
         } catch (ReflectiveOperationException ex) {
           throw new UnsupportedOperationException("Can't get list value at index " + index, ex);
