@@ -5,6 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>ru.mingun</groupId>
   <artifactId>kaitai-struct-model</artifactId>
+  <name>Kaitai Struct tree model</name>
   <version>1.0-SNAPSHOT</version>
   <dependencies>
     <dependency>
